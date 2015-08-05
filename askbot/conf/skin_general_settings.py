@@ -53,7 +53,7 @@ settings.register(
                         'To change the logo, select new file, '
                         'then submit this whole form.'
                     ),
-        default = '/images/logo.gif',
+        default = '/images/devask-icon.png',
         url_resolver = skin_utils.get_media_url
     )
 )
@@ -81,7 +81,7 @@ settings.register(
                         'or uncheck in the case you do not want the logo to '
                         'appear in the default location'
                     ),
-        default = False
+        default = True
     )
 )
 
@@ -98,7 +98,7 @@ settings.register(
                         'at <a href="%(favicon_info_url)s">this page</a>.'
                     ) % {'favicon_info_url': const.DEPENDENCY_URLS['favicon']},
         allowed_file_extensions = ('ico',),#only allow .ico files
-        default = '/images/favicon.gif',
+        default = '/images/favicon.ico',
         url_resolver = skin_utils.get_media_url
     )
 )
@@ -137,7 +137,7 @@ settings.register(
     values.StringValue(
         GENERAL_SKIN_SETTINGS,
         'ASKBOT_DEFAULT_SKIN',
-        default = 'default',
+        default = 'cloverskin',
         choices = skin_utils.get_skin_choices(),
         description = _('Select skin'),
     )
