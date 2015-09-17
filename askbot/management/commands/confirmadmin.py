@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 class Command(NoArgsCommand):
     def handle_noargs(self, *args, **kwargs):
 		if User.objects.all().count() == 0:
-			user = User.objects.create_user('Admin', 'aws@clover.com', 'tompassword')
+			user = User.objects.create_user('Admin', 'aws@clover.com', '3%JF@j!q!JykZY')
 			user.is_superuser = '1'
 			user.is_staff = '1'
 			user.status = 'd'
