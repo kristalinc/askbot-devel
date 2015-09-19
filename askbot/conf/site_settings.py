@@ -49,7 +49,7 @@ settings.register(
     livesettings.StringValue(
         QA_SITE_SETTINGS,
         'APP_DESCRIPTION',
-        default='Clover question and answer forum',
+        default='Question & Answer Forum for Clover Developers',
         description=_('Site description for the search engines')
     )
 )
