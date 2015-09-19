@@ -31,7 +31,7 @@ settings.register(
     livesettings.StringValue(
         QA_SITE_SETTINGS,
         'APP_KEYWORDS',
-        default=u'Askbot,forum,community',
+        default=u'Clover,developer,forum,community,mobile,mini,station,pos,platform,api,sdk,android',
         description=_('Comma separated list of Q&A site keywords')
     )
 )
@@ -40,7 +40,7 @@ settings.register(
     livesettings.StringValue(
         QA_SITE_SETTINGS,
         'APP_COPYRIGHT',
-        default='Copyright Askbot, 2010-2011.',
+        default='Copyright Clover, 2015-2016.',
         description=_('Copyright message to show in the footer')
     )
 )
@@ -49,8 +49,7 @@ settings.register(
     livesettings.StringValue(
         QA_SITE_SETTINGS,
         'APP_DESCRIPTION',
-        default='Open source question and answer forum written in ' +\
-                'Python and Django',
+        default='Clover question and answer forum',
         description=_('Site description for the search engines')
     )
 )
@@ -59,7 +58,7 @@ settings.register(
     livesettings.StringValue(
         QA_SITE_SETTINGS,
         'APP_SHORT_NAME',
-        default='Askbot',
+        default='DevAsk',
         description=_('Short name for your Q&A forum')
     )
 )
