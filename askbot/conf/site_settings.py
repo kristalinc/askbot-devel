@@ -94,7 +94,7 @@ settings.register(
                 'Base URL for your Q&A forum, must start with '
                 'http or https'
         ),
-        default = "http://localhost:8000/questions/",
+        default = "http://devask.clover.com/questions/",
         update_callback=app_url_callback
     )
 )
