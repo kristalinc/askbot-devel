@@ -12,6 +12,7 @@ from django.utils.translation import ugettext as _
 from django.utils.translation import activate as activate_language
 
 from askbot import const
+from askbot.deps.django_authopenid.util import email_is_blacklisted
 from askbot.conf import settings as askbot_settings
 from askbot.models import User, Post, PostRevision, Thread
 from askbot.models import Activity, EmailFeedSetting
@@ -90,8 +91,10 @@ class Command(NoArgsCommand):
     def handle_noargs(self, **options):
         if askbot_settings.ENABLE_EMAIL_ALERTS:
             activate_language(django_settings.LANGUAGE_CODE)
-            for user in User.objects.all():
+            for user in User.objects.exclude(status='b').iterator():
                 try:
+                    if email_is_blacklisted(user.email):
+                        continue
                     self.send_email_alerts(user)
                 except Exception:
                     self.report_exception(user)

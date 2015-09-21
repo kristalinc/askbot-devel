@@ -572,10 +572,25 @@ def user_stats(request, user, context):
     else:
         groups_membership_info = collections.defaultdict()
 
+    show_moderation_warning = (request.user.is_authenticated()
+                                and request.user.pk == user.pk
+                                and (user.is_watched() or user.is_blocked())
+                                and (user.about or user.website)
+                              )
+    show_profile_info = ((not (user.is_watched() or user.is_blocked()))
+                          or (request.user.is_authenticated()
+                              and (request.user.is_administrator_or_moderator()
+                                   or user.pk == request.user.pk
+                                  )
+                             )
+                        )
+
     data = {
         'active_tab':'users',
         'page_class': 'user-profile-page',
         'support_custom_avatars': ('avatar' in django_settings.INSTALLED_APPS),
+        'show_moderation_warning': show_moderation_warning,
+        'show_profile_info': show_profile_info,
         'tab_name' : 'stats',
         'page_title' : _('user profile overview'),
         'questions' : questions,
@@ -1018,12 +1033,13 @@ def user_select_languages(request, id=None, slug=None):
 def user_email_subscriptions(request, user, context):
 
     logging.debug(get_request_info(request))
+    action_status = None
+
     if request.method == 'POST':
         email_feeds_form = forms.EditUserEmailFeedsForm(request.POST)
         tag_filter_form = forms.TagFilterSelectionForm(request.POST, instance=user)
         if email_feeds_form.is_valid() and tag_filter_form.is_valid():
 
-            action_status = None
             tag_filter_saved = tag_filter_form.save()
             if tag_filter_saved:
                 action_status = _('changes saved')
@@ -1048,7 +1064,6 @@ def user_email_subscriptions(request, user, context):
         email_feeds_form = forms.EditUserEmailFeedsForm()
         email_feeds_form.set_initial_values(user)
         tag_filter_form = forms.TagFilterSelectionForm(instance=user)
-        action_status = None
 
     data = {
         'active_tab': 'users',
