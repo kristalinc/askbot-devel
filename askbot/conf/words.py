@@ -569,8 +569,8 @@ settings.register(
     values.StringValue(
         WORDS,
         'WORDS_NO_QUESTIONS_HERE',
-        default=_('No questions here.'),
-        description=_('No questions here.'),
+        default=_('No questions found.'),
+        description=_('No questions found.'),
         localized=True
     )
 )
@@ -589,8 +589,8 @@ settings.register(
     values.StringValue(
         WORDS,
         'WORDS_PLEASE_FEEL_FREE_TO_ASK_YOUR_QUESTION',
-        default=_('Please feel free to ask your question!'),
-        description=_('Please feel free to ask your question!'),
+        default=_('Or ask a new question.'),
+        description=_('Or ask a new question.'),
         localized=True
     )
 )
@@ -900,7 +900,7 @@ settings.register(
     values.StringValue(
         WORDS,
         'WORDS_THERE_ARE_NO_UNANSWERED_QUESTIONS_HERE',
-        default=_('There are no unanswered questions here'),
+        default=_('No unanswered questions found'),
         description=_('There are no unanswered questions here'),
         localized=True
     )
