@@ -95,6 +95,7 @@ SECRET_KEY = '{{secret_key}}'
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
     'askbot.skins.loaders.Loader',
+    'askbot.skins.loaders.JinjaAppDirectoryLoader',
     'django.template.loaders.app_directories.Loader',
     'django.template.loaders.filesystem.Loader',
     #'django.template.loaders.eggs.load_template_source',
@@ -122,6 +123,7 @@ MIDDLEWARE_CLASSES = (
     #'debug_toolbar.middleware.DebugToolbarMiddleware',
     'askbot.middleware.view_log.ViewLogMiddleware',
     'askbot.middleware.spaceless.SpacelessMiddleware',
+    'askbot.middleware.csrf.CsrfViewMiddleware',
 )
 
 
@@ -188,19 +190,28 @@ INSTALLED_APPS = (
     'followit',
     'tinymce',
     'group_messaging',
-    #'avatar',#experimental use git clone git://github.com/ericflo/django-avatar.git$
+    'captcha',
+    'avatar',
 )
 
 
 #setup memcached for production use!
-#see http://docs.djangoproject.com/en/1.1/topics/cache/ for details
-CACHE_BACKEND = 'locmem://'
-#needed for django-keyedcache
-CACHE_TIMEOUT = 6000
+# See http://docs.djangoproject.com/en/1.8/topics/cache/ for details.
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'askbot',
+        'TIMEOUT': 6000,
+        # Chose a unique KEY_PREFIX to avoid clashes with other applications
+        # using the same cache (e.g. a shared memcache instance).
+        'KEY_PREFIX': 'askbot',
+    }
+}
+
 #sets a special timeout for livesettings if you want to make them different
-LIVESETTINGS_CACHE_TIMEOUT = CACHE_TIMEOUT
-CACHE_PREFIX = 'askbot' #make this unique
+LIVESETTINGS_CACHE_TIMEOUT = CACHES['default']['TIMEOUT']
 CACHE_MIDDLEWARE_ANONYMOUS_ONLY = True
+CACHE_MIDDLEWARE_SECONDS = 600
 #If you use memcache you may want to uncomment the following line to enable memcached based sessions
 #SESSION_ENGINE = 'django.contrib.sessions.backends.cached_db'
 
@@ -255,7 +266,7 @@ STATICFILES_FINDERS = (
     'compressor.finders.CompressorFinder',
 )
 
-RECAPTCHA_USE_SSL = True
+NOCAPTCHA = True
 
 #HAYSTACK_SETTINGS
 ENABLE_HAYSTACK_SEARCH = False
@@ -273,8 +284,8 @@ ENABLE_HAYSTACK_SEARCH = False
 
 TINYMCE_COMPRESSOR = True
 TINYMCE_SPELLCHECKER = False
-TINYMCE_JS_ROOT = os.path.join(STATIC_ROOT, 'default/media/js/tinymce/')
-#TINYMCE_JS_URL = STATIC_URL + 'default/media/js/tinymce/tiny_mce.js'
+TINYMCE_JS_ROOT = os.path.join(STATIC_ROOT, 'default/media/tinymce/')
+#TINYMCE_JS_URL = STATIC_URL + 'default/media/tinymce/tiny_mce.js'
 TINYMCE_DEFAULT_CONFIG = {
     'plugins': 'askbot_imageuploader,askbot_attachment',
     'convert_urls': False,
@@ -318,6 +329,7 @@ if 'ASKBOT_CSS_DEVEL' in locals() and ASKBOT_CSS_DEVEL == True:
 COMPRESS_JS_FILTERS = []
 COMPRESS_PARSER = 'compressor.parser.HtmlParser'
 JINJA2_EXTENSIONS = ('compressor.contrib.jinja2ext.CompressorExtension',)
+JINJA2_TEMPLATES = ('captcha',)
 
 # Use syncdb for tests instead of South migrations. Without this, some tests
 # fail spuriously in MySQL.

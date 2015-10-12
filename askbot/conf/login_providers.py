@@ -130,6 +130,15 @@ settings.register(
     )
 )
 
+settings.register(
+    livesettings.StringValue(
+        LOGIN_PROVIDERS,
+        'OPENSTACKID_ENDPOINT_URL',
+        default='https://openstackid.org',
+        description=_('OpenStackID service endpoint url'),
+   )
+)
+
 providers = (
     'local',
     'AOL',
@@ -153,6 +162,7 @@ providers = (
     'Yahoo',
     'identi.ca',
     'LaunchPad',
+    'OpenStackID',
 )
 
 DISABLED_BY_DEFAULT = (    
@@ -170,6 +180,7 @@ DISABLED_BY_DEFAULT = (
     'Verisign',
     'Yahoo', 
     'LaunchPad',
+    'OpenStackID',
     )
 
 NEED_EXTRA_SETUP = ('Google Plus', 'Twitter', 'MediaWiki', 'Facebook', 'LinkedIn', 'identi.ca',)

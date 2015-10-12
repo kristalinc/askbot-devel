@@ -38,7 +38,7 @@ from django.utils.translation import ugettext_lazy
 from django.conf import settings as django_settings
 from askbot.conf import settings as askbot_settings
 from askbot import const as askbot_const
-from askbot.forms import AskbotRecaptchaField
+from askbot.forms import AskbotReCaptchaField
 from askbot.utils.forms import NextUrlField, UserNameField, UserEmailField, SetPasswordForm
 from askbot.utils.loading import load_module
 
@@ -101,6 +101,7 @@ class OpenidSigninForm(forms.Form):
                 ):
                 raise forms.ValidationError(_('i-names are not supported'))
             return self.cleaned_data['openid_url']
+
 
 class LoginForm(forms.Form):
     """All-inclusive login form.
@@ -217,6 +218,8 @@ class LoginForm(forms.Form):
         elif provider_type == 'mozilla-persona':
             self.cleaned_data['login_type'] = 'mozilla-persona'
 
+        self.cleaned_data['sreg_required'] = 'sreg_required' in provider_data
+
         return self.cleaned_data
 
     def do_clean_openid_fields(self, provider_data):
@@ -304,6 +307,7 @@ class LoginForm(forms.Form):
             self._errors['password_action'] = self.error_class([error_message])
             raise forms.ValidationError(error_message)
 
+
 class OpenidRegisterForm(forms.Form):
     """ openid signin form """
     next = NextUrlField()
@@ -316,13 +320,15 @@ class OpenidRegisterForm(forms.Form):
         if askbot_settings.TERMS_CONSENT_REQUIRED:
             self.fields['terms_accepted'] = ConsentField()
 
+
 class SafeOpenidRegisterForm(OpenidRegisterForm):
     """this form uses recaptcha in addition
     to the base register form
     """
     def __init__(self, *args, **kwargs):
         super(SafeOpenidRegisterForm, self).__init__(*args, **kwargs)
-        self.fields['recaptcha'] = AskbotRecaptchaField()
+        self.fields['recaptcha'] = AskbotReCaptchaField()
+
 
 class ClassicRegisterForm(SetPasswordForm):
     """ legacy registration form """
@@ -338,13 +344,15 @@ class ClassicRegisterForm(SetPasswordForm):
         if askbot_settings.TERMS_CONSENT_REQUIRED:
             self.fields['terms_accepted'] = ConsentField()
 
+
 class SafeClassicRegisterForm(ClassicRegisterForm):
     """this form uses recaptcha in addition
     to the base register form
     """
     def __init__(self, *args, **kwargs):
         super(SafeClassicRegisterForm, self).__init__(*args, **kwargs)
-        self.fields['recaptcha'] = AskbotRecaptchaField()
+        self.fields['recaptcha'] = AskbotReCaptchaField()
+
 
 class ChangePasswordForm(forms.Form):
     """ change password form """
@@ -381,6 +389,7 @@ class ChangePasswordForm(forms.Form):
                 raise forms.ValidationError(error)
         return self.cleaned_data
 
+
 class ChangeEmailForm(forms.Form):
     """ change email form """
     def __init__(self, data=None, files=None, auto_id='id_%s', prefix=None, \
@@ -407,6 +416,7 @@ class ChangeEmailForm(forms.Form):
             raise forms.ValidationError(u'This email is already registered \
                 in our database. Please choose another.')
 
+
 class AccountRecoveryForm(forms.Form):
     """with this form user enters email address and
     receives an account recovery link in email
@@ -430,6 +440,7 @@ class AccountRecoveryForm(forms.Form):
                 message = _('Sorry, we don\'t have this email address in the database')
                 raise forms.ValidationError(message)
 
+
 class ChangeopenidForm(forms.Form):
     """ change openid form """
     openid_url = forms.CharField(max_length=255,
@@ -440,6 +451,7 @@ class ChangeopenidForm(forms.Form):
             raise TypeError("Keyword argument 'user' must be supplied")
         super(ChangeopenidForm, self).__init__(data, *args, **kwargs)
         self.user = user
+
 
 class DeleteForm(forms.Form):
     """ confirm form to delete an account """

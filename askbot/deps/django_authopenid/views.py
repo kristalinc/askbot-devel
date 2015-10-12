@@ -56,7 +56,6 @@ from askbot.mail.messages import EmailValidation
 from askbot.utils import decorators as askbot_decorators
 from askbot.utils.functions import format_setting_name
 from askbot.utils.html import site_url
-from recaptcha_works.decorators import fix_recaptcha_remote_ip
 from askbot.deps.django_authopenid.ldap_auth import ldap_create_user
 from askbot.deps.django_authopenid.ldap_auth import ldap_authenticate
 from askbot.deps.django_authopenid.exceptions import OAuthError
@@ -567,8 +566,10 @@ def signin(request, template_name='authopenid/signin.html'):
                 logging.debug('processing signin with openid submission')
 
                 #todo: make a simple-use wrapper for openid protocol
-
-                sreg_req = sreg.SRegRequest(optional=['nickname', 'email'])
+                if login_form.cleaned_data['sreg_required']:
+                    sreg_req = sreg.SRegRequest(required=['nickname', 'email'])
+                else:
+                    sreg_req = sreg.SRegRequest(optional=['nickname', 'email'])
                 redirect_to = "%s%s?%s" % (
                         get_url_host(request),
                         reverse('user_complete_openid_signin'),
@@ -1010,7 +1011,6 @@ def finalize_generic_signin(
 
 @not_authenticated
 @csrf.csrf_protect
-@fix_recaptcha_remote_ip
 def register(request, login_provider_name=None, 
     user_identifier=None, redirect_url=None):
     """
@@ -1040,10 +1040,16 @@ def register(request, login_provider_name=None,
         provider_data = providers[login_provider_name]
 
         def email_is_acceptable(email):
-            return bool(email or (
-                    askbot_settings.BLANK_EMAIL_ALLOWED \
-                    and askbot_settings.REQUIRE_VALID_EMAIL_FOR == 'nothing'
-                ))
+            email = email.strip()
+
+            blacklisting_on = askbot_settings.BLACKLISTED_EMAIL_PATTERNS_MODE != 'disabled'
+
+            is_blacklisted = email and blacklisting_on and util.email_is_blacklisted(email)
+            is_blank_and_ok = (email == '') \
+                                and askbot_settings.BLANK_EMAIL_ALLOWED \
+                                and askbot_settings.REQUIRE_VALID_EMAIL_FOR == 'nothing'
+
+            return bool((not is_blacklisted) or is_blank_and_ok)
 
         def username_is_acceptable(username):
             if username.strip() == '':
@@ -1235,7 +1241,6 @@ def verify_email_and_register(request):
 
 @not_authenticated
 @csrf.csrf_protect
-@fix_recaptcha_remote_ip
 def signup_with_password(request):
     """Create a password-protected account
     template: authopenid/signup_with_password.html
@@ -1255,7 +1260,6 @@ def signup_with_password(request):
         form = RegisterForm(request.POST)
 
         if form.is_valid():
-            next = form.cleaned_data['next']
             username = form.cleaned_data['username']
             password = form.cleaned_data['password1']
             email = form.cleaned_data['email']

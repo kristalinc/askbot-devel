@@ -17,9 +17,10 @@ from django.utils.text import get_text_list
 from django.contrib.auth.models import User
 from django_countries import countries
 from askbot.utils.forms import NextUrlField, UserNameField
+from askbot.utils.forms import moderated_email_validator
 from askbot.utils.slug import slugify
 from askbot.mail import extract_first_email_address
-from recaptcha_works.fields import RecaptchaField
+from captcha.fields import ReCaptchaField
 from askbot.conf import settings as askbot_settings
 from askbot.conf import get_tag_display_filter_strategy_choices
 from tinymce.widgets import TinyMCE
@@ -222,12 +223,13 @@ class CountedWordsField(forms.CharField):
         return value
 
 
-class AskbotRecaptchaField(RecaptchaField):
+class AskbotReCaptchaField(ReCaptchaField):
     """A recaptcha field with preset keys from the livesettings"""
     def __init__(self, *args, **kwargs):
         kwargs.setdefault('private_key', askbot_settings.RECAPTCHA_SECRET)
         kwargs.setdefault('public_key', askbot_settings.RECAPTCHA_KEY)
-        super(AskbotRecaptchaField, self).__init__(*args, **kwargs)
+        kwargs.setdefault('use_ssl', True)
+        super(AskbotReCaptchaField, self).__init__(*args, **kwargs)
 
 
 class LanguageField(forms.ChoiceField):
@@ -855,7 +857,7 @@ class FeedbackForm(forms.Form):
         super(FeedbackForm, self).__init__(*args, **kwargs)
         self.user = user
         if should_use_recaptcha(user):
-            self.fields['recaptcha'] = AskbotRecaptchaField()
+            self.fields['recaptcha'] = AskbotReCaptchaField()
 
     def clean_message(self):
         message = self.cleaned_data.get('message', '').strip()
@@ -1060,7 +1062,7 @@ class AskForm(PostAsSomeoneForm, PostPrivatelyForm):
             self.fields['language'] = LanguageField()
 
         if should_use_recaptcha(user):
-            self.fields['recaptcha'] = AskbotRecaptchaField()
+            self.fields['recaptcha'] = AskbotReCaptchaField()
 
     def clean_ask_anonymously(self):
         """returns false if anonymous asking is not allowed
@@ -1098,7 +1100,7 @@ class AskWidgetForm(forms.Form, FormWithHideableFields):
             self.fields['text'].min_length = 0
 
         if should_use_recaptcha(user):
-            self.fields['recaptcha'] = AskbotRecaptchaField()
+            self.fields['recaptcha'] = AskbotReCaptchaField()
 
 class CreateAskWidgetForm(forms.Form, FormWithHideableFields):
     title =  forms.CharField(max_length=100)
@@ -1248,7 +1250,7 @@ class AnswerForm(PostAsSomeoneForm, PostPrivatelyForm):
         self.fields['text'] = AnswerEditorField(label='', user=user)
 
         if should_use_recaptcha(user):
-            self.fields['recaptcha'] = AskbotRecaptchaField()
+            self.fields['recaptcha'] = AskbotReCaptchaField()
 
     def has_data(self):
         """True if form is bound or has inital data"""
@@ -1366,7 +1368,7 @@ class EditQuestionForm(PostAsSomeoneForm, PostPrivatelyForm):
             self.fields['language'] = LanguageField()
 
         if should_use_recaptcha(self.user):
-            self.fields['recaptcha'] = AskbotRecaptchaField()
+            self.fields['recaptcha'] = AskbotReCaptchaField()
 
 
     def clean(self):
@@ -1417,7 +1419,7 @@ class EditAnswerForm(PostAsSomeoneForm, PostPrivatelyForm):
         self.fields['wiki'].initial = answer.wiki
 
         if should_use_recaptcha(user):
-            self.fields['recaptcha'] = AskbotRecaptchaField()
+            self.fields['recaptcha'] = AskbotReCaptchaField()
 
     def has_changed(self):
         #todo: this function is almost copy/paste of EditQuestionForm.has_changed()
@@ -1519,10 +1521,12 @@ class EditUserForm(forms.Form):
 
     def clean_email(self):
         """For security reason one unique email in database"""
-        email = self.cleaned_data['email']
-        if email.strip() == '' and askbot_settings.BLANK_EMAIL_ALLOWED:
+        email = self.cleaned_data.get('email', '').strip()
+        if email == '' and askbot_settings.BLANK_EMAIL_ALLOWED:
             self.cleaned_data['email'] = ''
             return self.cleaned_data['email']
+
+        moderated_email_validator(email)
 
         if email != self.user.email:
             #todo dry it, there is a similar thing in openidauth
