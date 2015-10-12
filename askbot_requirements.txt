@@ -25,6 +25,6 @@ oauth2
 pyjwt
 pystache==0.3.1
 python-openid
-pytz==2013b
+pytz==2013b0
 sanction==0.3.1
 unidecode
