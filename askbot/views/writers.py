@@ -317,7 +317,7 @@ def ask(request):#view used to ask a new question
         'form' : form,
         'editor_is_folded': editor_is_folded,
         'mandatory_tags': models.tag.get_mandatory_tags(),
-        'email_validation_faq_url':reverse('faq') + '#validate',
+        'email_validation_faq_url':reverse('help') + '#validate',
         'category_tree_data': askbot_settings.CATEGORY_TREE,
         'tag_names': list()#need to keep context in sync with edit_question for tag editor
     }
