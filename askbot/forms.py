@@ -304,8 +304,8 @@ class TitleField(forms.CharField):
         chars = slugify(value).replace('-', '')
         if len(chars) < askbot_settings.MIN_TITLE_LENGTH:
             msg = ungettext_lazy(
-                'must have > %d non-punctuation character',
-                'must have > %d non-punctuation characters',
+                'Must have > %d non-punctuation character',
+                'Must have > %d non-punctuation characters',
                 askbot_settings.MIN_TITLE_LENGTH
             ) % askbot_settings.MIN_TITLE_LENGTH
             raise forms.ValidationError(msg)
@@ -339,7 +339,7 @@ class EditorField(forms.CharField):
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)
         if user is None:
-            raise ValueError('user parameter is required')
+            raise ValueError('User parameter is required')
         self.user = user
 
         editor_attrs = kwargs.pop('editor_attrs', {})
@@ -353,7 +353,7 @@ class EditorField(forms.CharField):
         elif askbot_settings.EDITOR_TYPE == 'tinymce':
             self.widget = TinyMCE(attrs=widget_attrs, mce_attrs=editor_attrs)
         self.min_length = 10
-        self.post_term_name = _('post')
+        self.post_term_name = _('Post')
 
     def clean(self, value):
         if value is None:
@@ -403,15 +403,16 @@ class AnswerEditorField(EditorField):
 def clean_tag(tag_name, look_in_db=True):
     """a function that cleans a single tag name"""
     tag_length = len(tag_name)
-    if tag_length > askbot_settings.MAX_TAG_LENGTH:
+    max_length = askbot_settings.MAX_TAG_LENGTH
+    if tag_length > max_length:
         #singular form is odd in english, but required for pluralization
         #in other languages
         msg = ungettext_lazy(
             #odd but added for completeness
-            'each tag must be shorter than %(max_chars)d character',
-            'each tag must be shorter than %(max_chars)d characters',
+            'Each tag must be shorter than %(max_chars)d character',
+            'Each tag must be shorter than %(max_chars)d characters',
             tag_length
-        ) % {'max_chars': tag_length}
+        ) % {'max_chars': max_length}
         raise forms.ValidationError(msg)
 
     #todo - this needs to come from settings
@@ -460,10 +461,10 @@ class TagNamesField(forms.CharField):
                         )
         self.label = kwargs.get('label') or _('tags')
         self.help_text = kwargs.get('help_text') or ungettext_lazy(
-            'Tags are short keywords, with no spaces within. '
-            'Up to %(max_tags)d tag can be used.',
-            'Tags are short keywords, with no spaces within. '
-            'Up to %(max_tags)d tags can be used.',
+            'Tags are short keywords, formatted without spaces. '
+            'Up to %(max_tags)d tag can be entered.',
+            'Tags are short keywords. '
+            'Up to %(max_tags)d tags can be entered, seperated by spaces.',
             askbot_settings.MAX_TAGS_PER_POST
         ) % {'max_tags': askbot_settings.MAX_TAGS_PER_POST}
         self.initial = ''
@@ -487,8 +488,8 @@ class TagNamesField(forms.CharField):
         if tag_count > askbot_settings.MAX_TAGS_PER_POST:
             max_tags = askbot_settings.MAX_TAGS_PER_POST
             msg = ungettext_lazy(
-                        'please use %(tag_count)d tag or less',
-                        'please use %(tag_count)d tags or less',
+                        'Please use at most %(tag_count)d tag',
+                        'Please use %(tag_count)d tags or less',
                         tag_count) % {'tag_count': max_tags}
             raise forms.ValidationError(msg)
 
@@ -523,8 +524,8 @@ class WikiField(forms.BooleanField):
         self.required = False
         self.initial = False
         self.label = _(
-            'community wiki (karma is not awarded & '
-            'many others can edit wiki post)'
+            'Community wiki - Karma is not awarded, and'
+            'any user with sufficient karma can edit a wiki post'
         )
 
     def clean(self, value):
@@ -568,7 +569,7 @@ class SummaryField(forms.CharField):
         self.max_length = 300
         self.label = _('update summary:')
         self.help_text = _(
-            'enter a brief summary of your revision (e.g. '
+            'Enter a brief summary of your revision (e.g. '
             'fixed spelling, grammar, improved style...), this '
             'field is optional'
         )
@@ -749,9 +750,9 @@ class ChangeUserStatusForm(forms.Form):
             elif moderator.is_moderator():
                 user_status_choices = MODERATOR_STATUS_CHOICES
                 if subject.is_moderator() and subject != moderator:
-                    raise ValueError('moderator cannot moderate another moderator')
+                    raise ValueError('Moderator cannot moderate another moderator')
         else:
-            raise ValueError('moderator or admin expected from "moderator"')
+            raise ValueError('Moderator or admin expected from "moderator"')
 
         #remove current status of the "subject" user from choices
         user_status_choices = filter_choices(
@@ -760,7 +761,7 @@ class ChangeUserStatusForm(forms.Form):
                                     )
 
         #add prompt option
-        user_status_choices = (('select', _('which one?')), ) \
+        user_status_choices = (('select', _('Which one?')), ) \
                                 + user_status_choices
 
         self.fields['user_status'].choices = user_status_choices
@@ -796,7 +797,7 @@ class ChangeUserStatusForm(forms.Form):
             if self.moderator.is_moderator() and user_status == 'moderator':
                 del self.cleanded_data['user_status']
                 raise forms.ValidationError(
-                                _('Cannot turn other user to moderator')
+                                _('Cannot set other user to moderator')
                             )
 
             #do not allow moderator to change status of other moderators
@@ -911,7 +912,7 @@ class PostPrivatelyForm(forms.Form, FormWithHideableFields):
     two related methods"""
 
     post_privately = forms.BooleanField(
-        label = _('keep private within your groups'),
+        label = _('Keep private within your groups'),
         required = False
     )
     def __init__(self, *args, **kwargs):
@@ -1009,14 +1010,14 @@ class PostAsSomeoneForm(forms.Form):
                                     'post_author_username',
                                     ErrorList()
                                 )
-            username_errors.append(_('User name is required with the email'))
+            username_errors.append(_('Username is required with the email'))
             self._errors['post_author_username'] = username_errors
-            raise forms.ValidationError('missing user name')
+            raise forms.ValidationError('Missing username')
         elif email == '' and username:
             email_errors = self._errors.get('post_author_email', ErrorList())
-            email_errors.append(_('Email is required if user name is added'))
+            email_errors.append(_('Email is required if username is added'))
             self._errors['post_author_email'] = email_errors
-            raise forms.ValidationError('missing email')
+            raise forms.ValidationError('Missing email')
 
         return self.cleaned_data
 
@@ -1480,7 +1481,7 @@ class EditUserForm(forms.Form):
     birthday = forms.DateField(
                         label=_('Date of birth'),
                         help_text=_(
-                            'will not be shown, used to calculate '
+                            'Will not be shown, used to calculate '
                             'age, format: YYYY-MM-DD'
                         ),
                         required=False,
@@ -1691,13 +1692,13 @@ class SubscribeForEmailUpdatesField(forms.ChoiceField):
     def __init__(self, **kwargs):
         kwargs['widget'] = forms.widgets.RadioSelect
         kwargs['error_messages'] = {
-            'required': _('please choose one of the options above')
+            'required': _('Please choose one of the options above')
         }
         kwargs['choices'] = (
             ('y', _('okay, let\'s try!')),
             (
                 'n',
-                _('no %(sitename)s email please, thanks')
+                _('No %(sitename)s email please, thanks')
                     % {'sitename': askbot_settings.APP_SHORT_NAME}
             )
         )
