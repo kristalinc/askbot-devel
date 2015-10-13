@@ -112,7 +112,7 @@ settings.register(
     livesettings.StringValue(
         QA_SITE_SETTINGS,
         'GREETING_FOR_ANONYMOUS_USER',
-        default=_('First time here? Check out the FAQ!'),
+        default=_('First time here?'),
         localized=True,
         hidden=False,
         description=_(
@@ -120,7 +120,7 @@ settings.register(
                 'shown to the anonymous user'
             ),
         help_text=_(
-                'Use HTML to format the message '
+                'a link to the Help page is automatically appended to this message'
             )
     )
 )
