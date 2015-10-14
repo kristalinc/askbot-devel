@@ -28,7 +28,7 @@ import logging
 
 def should_use_recaptcha(user):
     """True if user must use recaptcha"""
-    return askbot_settings.USE_RECAPTCHA and (user.is_anonymous() or (user.is_watched() and user.reputation < askbot_settings.MIN_REP_TO_AUTOAPPROVE_USER))
+    return askbot_settings.USE_RECAPTCHA and (user.is_anonymous() or (user.is_watched() and user.reputation > askbot_settings.MIN_REP_TO_AUTOAPPROVE_USER))
 
 
 def cleanup_dict(dictionary, key, empty_value):
