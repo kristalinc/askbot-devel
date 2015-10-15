@@ -68,7 +68,7 @@ def default_html_moderator(post):
 
     author = rev.author
     not_admin = not author.is_administrator_or_moderator()
-    if not_admin and has_moderated_tags(post.html) and (author.reputation > askbot_settings.MIN_REP_TO_AUTOAPPROVE_USER):
+    if not_admin and has_moderated_tags(post.html) and (author.reputation <= askbot_settings.MIN_REP_TO_AUTOAPPROVE_USER):
         before = post.html
         after = moderate_tags(before)
         if after != before:
