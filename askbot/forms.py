@@ -524,7 +524,7 @@ class WikiField(forms.BooleanField):
         self.required = False
         self.initial = False
         self.label = _(
-            'Community wiki - Karma is not awarded, and'
+            'Community wiki - Karma is not awarded, and '
             'any user with sufficient karma can edit a wiki post'
         )
 
