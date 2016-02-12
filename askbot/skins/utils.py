@@ -106,6 +106,7 @@ def get_media_url(url, ignore_missing = False):
 
     #a hack allowing urls media stored on external locations to
     #just pass through unchanged
+
     if url.startswith('http://') or url.startswith('https://'):
         return url
     #todo: handles case of multiple skin directories
@@ -167,6 +168,10 @@ def get_media_url(url, ignore_missing = False):
 
     #after = datetime.datetime.now()
     #print after - before
+
+    # fix double slash for assembled external urls
+    if url.startswith('http:') or url.startswith('https:'):
+        url = url.replace('/','//',1)
     return url
 
 def update_media_revision(skin=None):
